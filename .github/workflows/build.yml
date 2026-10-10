@@ -1,17 +1,44 @@
 name: build-ios
-on: workflow_dispatch
+
+on:
+  workflow_dispatch
+
+permissions:
+  contents: write
+
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-14
     timeout-minutes: 120
+
     steps:
-      - uses: actions/checkout@v4
-      - run: brew install xcodegen
-      - run: |
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Setup Rust toolchain
+        run: |
           rustup toolchain install 1.98.1
           rustup target add aarch64-apple-ios --toolchain 1.98.1
-      - run: BUNDLE_ID=com.kestrel4829.muguet ./make-ios.sh --ipa
-      - uses: actions/upload-artifact@v4
+
+      - name: Build IPA
+        run: BUNDLE_ID=com.kestrel4829.muguet ./make-ios.sh --ipa
+
+      # خيار 1: رفع الملف المباشر إلى GitHub Releases (الأفضل للآيباد بدون فك ضغط)
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Muguet Build #${{ github.run_number }}
+          files: build/Muguet.ipa
+          body: "ملف IPA جاهز للتحميل والتثبيت المباشر."
+
+      # خيار 2: رفع الـ Artifacts
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: Muguet
           path: build/Muguet.ipa
+

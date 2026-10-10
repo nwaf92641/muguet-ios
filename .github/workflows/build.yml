@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 120
 
     steps:
@@ -22,10 +22,6 @@ jobs:
         run: |
           rustup toolchain install 1.98.1
           rustup target add aarch64-apple-ios --toolchain 1.98.1
-
-      - name: Fix Launcher.swift UI style
-        run: |
-          sed -i '' 's/\.glassProminent/\.borderedProminent/g' ios/Launcher.swift || true
 
       - name: Build IPA
         run: BUNDLE_ID=com.kestrel4829.muguet ./make-ios.sh --ipa

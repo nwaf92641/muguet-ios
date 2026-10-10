@@ -15,6 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+
       - name: Install xcodegen
         run: brew install xcodegen
 
@@ -23,22 +26,23 @@ jobs:
           rustup toolchain install 1.98.1
           rustup target add aarch64-apple-ios --toolchain 1.98.1
 
+      - name: Fix Launcher.swift UI style
+        run: |
+          sed -i '' 's/\.glassProminent/\.borderedProminent/g' ios/Launcher.swift || true
+
       - name: Build IPA
         run: BUNDLE_ID=com.kestrel4829.muguet ./make-ios.sh --ipa
 
-      # خيار 1: رفع الملف المباشر إلى GitHub Releases (الأفضل للآيباد بدون فك ضغط)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: Muguet Build #${{ github.run_number }}
           files: build/Muguet.ipa
-          body: "ملف IPA جاهز للتحميل والتثبيت المباشر."
+          body: "ملف IPA جاهز ومستقر للتحميل والتثبيت المباشر."
 
-      # خيار 2: رفع الـ Artifacts
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Muguet
           path: build/Muguet.ipa
-
